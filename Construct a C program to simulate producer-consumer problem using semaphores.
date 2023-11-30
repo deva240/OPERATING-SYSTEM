@@ -1,0 +1,91 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <pthread.h>
+#include <semaphore.h>
+
+#define BUFFER_SIZE 5
+#define MAX_ITEMS 10
+
+int buffer[BUFFER_SIZE];
+int in = 0, out = 0;
+
+sem_t empty, full, mutex;
+
+// Function to produce an item
+int produceItem() {
+    return rand() % 100 + 1; // Generates a random number between 1 and 100
+}
+
+// Function to insert an item into the buffer
+void insertItem(int item) {
+    buffer[in] = item;
+    in = (in + 1) % BUFFER_SIZE;
+}
+
+// Function to remove an item from the buffer
+int removeItem() {
+    int item = buffer[out];
+    out = (out + 1) % BUFFER_SIZE;
+    return item;
+}
+
+// Producer thread function
+void *producer(void *arg) {
+    for (int i = 0; i < MAX_ITEMS; ++i) {
+        int item = produceItem();
+
+        sem_wait(&empty);
+        sem_wait(&mutex);
+
+        insertItem(item);
+        printf("Produced item: %d\n", item);
+
+        sem_post(&mutex);
+        sem_post(&full);
+    }
+
+    pthread_exit(NULL);
+}
+
+// Consumer thread function
+void *consumer(void *arg) {
+    for (int i = 0; i < MAX_ITEMS; ++i) {
+        sem_wait(&full);
+        sem_wait(&mutex);
+
+        int item = removeItem();
+        printf("Consumed item: %d\n", item);
+
+        sem_post(&mutex);
+        sem_post(&empty);
+    }
+
+    pthread_exit(NULL);
+}
+
+int main() {
+    // Initialize semaphores
+    sem_init(&empty, 0, BUFFER_SIZE);
+    sem_init(&full, 0, 0);
+    sem_init(&mutex, 0, 1);
+
+    // Create producer and consumer threads
+    pthread_t producerThread, consumerThread;
+
+    if (pthread_create(&producerThread, NULL, producer, NULL) != 0 ||
+        pthread_create(&consumerThread, NULL, consumer, NULL) != 0) {
+        perror("Error creating threads");
+        exit(EXIT_FAILURE);
+    }
+
+    // Wait for threads to finish
+    pthread_join(producerThread, NULL);
+    pthread_join(consumerThread, NULL);
+
+    // Destroy semaphores
+    sem_destroy(&empty);
+    sem_destroy(&full);
+    sem_destroy(&mutex);
+
+    return 0;
+}
