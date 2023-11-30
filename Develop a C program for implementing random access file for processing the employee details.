@@ -1,0 +1,149 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define FILENAME "employee_data.dat"
+#define MAX_NAME_LENGTH 50
+#define MAX_EMPLOYEES 100
+
+// Structure to represent an employee
+struct Employee {
+    int id;
+    char name[MAX_NAME_LENGTH];
+    float salary;
+};
+
+// Function to add a new employee to the file
+void addEmployee() {
+    struct Employee emp;
+
+    // Open the file in binary write mode
+    FILE *file = fopen(FILENAME, "ab");
+    if (file == NULL) {
+        perror("Error opening file");
+        exit(EXIT_FAILURE);
+    }
+
+    // Get employee details from the user
+    printf("Enter employee ID: ");
+    scanf("%d", &emp.id);
+    printf("Enter employee name: ");
+    scanf("%s", emp.name);
+    printf("Enter employee salary: ");
+    scanf("%f", &emp.salary);
+
+    // Write the employee structure to the file
+    fwrite(&emp, sizeof(struct Employee), 1, file);
+
+    // Close the file
+    fclose(file);
+
+    printf("Employee added successfully.\n");
+}
+
+// Function to display all employees from the file
+void displayEmployees() {
+    struct Employee emp;
+
+    // Open the file in binary read mode
+    FILE *file = fopen(FILENAME, "rb");
+    if (file == NULL) {
+        perror("Error opening file");
+        exit(EXIT_FAILURE);
+    }
+
+    // Read and display each employee
+    printf("\nEmployee Details:\n");
+    while (fread(&emp, sizeof(struct Employee), 1, file) == 1) {
+        printf("ID: %d, Name: %s, Salary: %.2f\n", emp.id, emp.name, emp.salary);
+    }
+
+    // Close the file
+    fclose(file);
+}
+
+// Function to update employee details based on ID
+void updateEmployee() {
+    int targetID;
+    struct Employee emp;
+
+    // Open the file in binary read and write mode
+    FILE *file = fopen(FILENAME, "r+b");
+    if (file == NULL) {
+        perror("Error opening file");
+        exit(EXIT_FAILURE);
+    }
+
+    // Get the ID of the employee to update
+    printf("Enter the ID of the employee to update: ");
+    scanf("%d", &targetID);
+
+    // Search for the employee with the given ID
+    int found = 0;
+    while (fread(&emp, sizeof(struct Employee), 1, file) == 1) {
+        if (emp.id == targetID) {
+            // Get updated details from the user
+            printf("Enter new employee name: ");
+            scanf("%s", emp.name);
+            printf("Enter new employee salary: ");
+            scanf("%f", &emp.salary);
+
+            // Move the file pointer back to update the record
+            fseek(file, -sizeof(struct Employee), SEEK_CUR);
+            // Write the updated employee structure to the file
+            fwrite(&emp, sizeof(struct Employee), 1, file);
+            
+            found = 1;
+            break;
+        }
+    }
+
+    if (found) {
+        printf("Employee details updated successfully.\n");
+    } else {
+        printf("Employee with ID %d not found.\n", targetID);
+    }
+
+    // Close the file
+    fclose(file);
+}
+
+int main() {
+    int choice;
+
+    // Create a file if it doesn't exist
+    FILE *file = fopen(FILENAME, "ab");
+    if (file == NULL) {
+        perror("Error opening file");
+        exit(EXIT_FAILURE);
+    }
+    fclose(file);
+
+    while (1) {
+        printf("\nEmployee Database\n");
+        printf("1. Add Employee\n");
+        printf("2. Display Employees\n");
+        printf("3. Update Employee Details\n");
+        printf("4. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                addEmployee();
+                break;
+            case 2:
+                displayEmployees();
+                break;
+            case 3:
+                updateEmployee();
+                break;
+            case 4:
+                exit(EXIT_SUCCESS);
+            default:
+                printf("Invalid choice. Please enter a valid option.\n");
+        }
+    }
+
+    return 0;
+}
