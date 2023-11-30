@@ -1,0 +1,75 @@
+#include <stdio.h>
+
+// Structure to represent a process
+struct Process {
+    int id;
+    int priority;
+    int arrivalTime;
+    int burstTime;
+    int remainingTime;
+};
+
+// Function to find the process with the highest priority
+int findHighestPriority(struct Process processes[], int n, int currentTime) {
+    int highestPriorityIndex = -1;
+    int highestPriority = -1;
+
+    for (int i = 0; i < n; i++) {
+        // Check if the process has arrived and has remaining execution time
+        if (processes[i].arrivalTime <= currentTime && processes[i].remainingTime > 0) {
+            // If it's the first eligible process or has a higher priority
+            if (highestPriority == -1 || processes[i].priority < highestPriority) {
+                highestPriority = processes[i].priority;
+                highestPriorityIndex = i;
+            }
+        }
+    }
+
+    return highestPriorityIndex;
+}
+
+// Function to simulate the scheduling
+void scheduleProcesses(struct Process processes[], int n) {
+    int currentTime = 0;
+    int completedProcesses = 0;
+
+    printf("Time\tProcess\n");
+
+    while (completedProcesses < n) {
+        // Find the process with the highest priority
+        int highestPriorityIndex = findHighestPriority(processes, n, currentTime);
+
+        if (highestPriorityIndex == -1) {
+            // No eligible process found at this time, move to the next
+            currentTime++;
+        } else {
+            // Execute the selected process for one time unit
+            printf("%d\tP%d\n", currentTime, processes[highestPriorityIndex].id);
+            processes[highestPriorityIndex].remainingTime--;
+
+            // Check if the process is completed
+            if (processes[highestPriorityIndex].remainingTime == 0) {
+                completedProcesses++;
+            }
+
+            currentTime++;
+        }
+    }
+}
+
+int main() {
+    // Example processes with priority values (lower value means higher priority)
+    struct Process processes[] = {
+        {1, 2, 0, 6, 6},
+        {2, 1, 2, 4, 4},
+        {3, 3, 4, 3, 3},
+        {4, 4, 6, 8, 8}
+    };
+
+    int n = sizeof(processes) / sizeof(processes[0]);
+
+    // Run the scheduling algorithm
+    scheduleProcesses(processes, n);
+
+    return 0;
+}
