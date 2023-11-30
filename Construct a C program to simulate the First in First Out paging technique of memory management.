@@ -1,0 +1,66 @@
+#include <stdio.h>
+
+#define MAX_FRAMES 3 // Maximum number of frames in memory
+
+void printFrames(int frames[], int n) {
+    for (int i = 0; i < n; i++) {
+        if (frames[i] == -1) {
+            printf(" - ");
+        } else {
+            printf(" %d ", frames[i]);
+        }
+    }
+    printf("\n");
+}
+
+int isPageInFrames(int frames[], int n, int page) {
+    for (int i = 0; i < n; i++) {
+        if (frames[i] == page) {
+            return 1; // Page found in frames
+        }
+    }
+    return 0; // Page not found in frames
+}
+
+int getPageToReplace(int frames[], int n, int page) {
+    return frames[0]; // FIFO, always replace the first page that came in
+}
+
+void FIFO(int pages[], int n, int frames[], int num_frames) {
+    int page_faults = 0;
+
+    for (int i = 0; i < n; i++) {
+        printf("Page %d - Frames:", pages[i]);
+        printFrames(frames, num_frames);
+
+        if (!isPageInFrames(frames, num_frames, pages[i])) {
+            int page_to_replace = getPageToReplace(frames, num_frames, pages[i]);
+
+            // Replace the page
+            for (int j = 0; j < num_frames; j++) {
+                if (frames[j] == page_to_replace) {
+                    frames[j] = pages[i];
+                    break;
+                }
+            }
+
+            page_faults++;
+        }
+    }
+
+    printf("\nTotal Page Faults: %d\n", page_faults);
+}
+
+int main() {
+    int pages[] = {1, 3, 0, 3, 5, 6, 3};
+    int num_pages = sizeof(pages) / sizeof(pages[0]);
+
+    int frames[MAX_FRAMES];
+    for (int i = 0; i < MAX_FRAMES; i++) {
+        frames[i] = -1; // Initialize frames to -1 (indicating an empty frame)
+    }
+
+    FIFO(pages, num_pages, frames, MAX_FRAMES);
+
+    return 0;
+}
