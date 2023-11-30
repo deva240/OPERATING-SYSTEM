@@ -1,0 +1,73 @@
+#include <stdio.h>
+
+// Structure to represent a block of memory
+struct Block {
+    int size;
+    int allocated;
+};
+
+// Function to allocate memory using best fit algorithm
+void bestFit(struct Block blocks[], int m, int processSize) {
+    int i, j;
+    int bestFitIdx = -1;
+
+    // Find the best fit block
+    for (i = 0; i < m; i++) {
+        if (blocks[i].allocated == 0 && blocks[i].size >= processSize) {
+            if (bestFitIdx == -1 || blocks[i].size < blocks[bestFitIdx].size) {
+                bestFitIdx = i;
+            }
+        }
+    }
+
+    // If a block is found, allocate memory
+    if (bestFitIdx != -1) {
+        blocks[bestFitIdx].allocated = 1;
+        printf("Memory allocated using Best Fit to Block %d\n", bestFitIdx + 1);
+    } else {
+        printf("Not enough memory to allocate\n");
+    }
+}
+
+// Function to display the memory status
+void displayMemoryStatus(struct Block blocks[], int m) {
+    printf("\nMemory Status:\n");
+    for (int i = 0; i < m; i++) {
+        printf("Block %d: Size = %d, Allocated = %s\n", i + 1, blocks[i].size,
+               blocks[i].allocated ? "Yes" : "No");
+    }
+    printf("\n");
+}
+
+int main() {
+    int m; // Number of memory blocks
+    printf("Enter the number of memory blocks: ");
+    scanf("%d", &m);
+
+    struct Block blocks[m];
+
+    // Input memory block sizes
+    for (int i = 0; i < m; i++) {
+        printf("Enter the size of Block %d: ", i + 1);
+        scanf("%d", &blocks[i].size);
+        blocks[i].allocated = 0;
+    }
+
+    int n; // Number of processes
+    printf("Enter the number of processes: ");
+    scanf("%d", &n);
+
+    // Input process sizes and allocate memory using best fit
+    for (int i = 0; i < n; i++) {
+        int processSize;
+        printf("Enter the size of Process %d: ", i + 1);
+        scanf("%d", &processSize);
+
+        bestFit(blocks, m, processSize);
+
+        // Display memory status after each allocation
+        displayMemoryStatus(blocks, m);
+    }
+
+    return 0;
+}
