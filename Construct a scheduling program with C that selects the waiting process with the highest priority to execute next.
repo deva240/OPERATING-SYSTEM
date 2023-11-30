@@ -1,0 +1,68 @@
+#include <stdio.h>
+
+// Structure to represent a process
+struct Process {
+    int id;
+    int priority;
+    int executionTime;
+};
+
+// Function to find the process with the highest priority
+int findHighestPriority(struct Process processes[], int n, int currentTime) {
+    int highestPriorityIndex = -1;
+    int highestPriority = -1;
+
+    for (int i = 0; i < n; i++) {
+        // Check if the process has arrived and not yet executed
+        if (processes[i].executionTime > 0) {
+            // If it's the first eligible process or has a higher priority
+            if (highestPriority == -1 || processes[i].priority < highestPriority) {
+                highestPriority = processes[i].priority;
+                highestPriorityIndex = i;
+            }
+        }
+    }
+
+    return highestPriorityIndex;
+}
+
+// Function to simulate the scheduling
+void scheduleProcesses(struct Process processes[], int n) {
+    int currentTime = 0;
+
+    printf("Execution Order: ");
+
+    for (int i = 0; i < n; i++) {
+        // Find the process with the highest priority
+        int highestPriorityIndex = findHighestPriority(processes, n, currentTime);
+
+        if (highestPriorityIndex == -1) {
+            // No eligible process found at this time, move to the next
+            currentTime++;
+        } else {
+            // Execute the selected process
+            printf("P%d ", processes[highestPriorityIndex].id);
+            processes[highestPriorityIndex].executionTime--;
+            currentTime++;
+        }
+    }
+
+    printf("\n");
+}
+
+int main() {
+    // Example processes with priority values (lower value means higher priority)
+    struct Process processes[] = {
+        {1, 2, 6},
+        {2, 1, 4},
+        {3, 3, 3},
+        {4, 4, 8}
+    };
+
+    int n = sizeof(processes) / sizeof(processes[0]);
+
+    // Run the scheduling algorithm
+    scheduleProcesses(processes, n);
+
+    return 0;
+}
